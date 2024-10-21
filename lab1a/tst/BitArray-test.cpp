@@ -197,7 +197,7 @@ TEST_F(BitArrayTest, OperatorRightShiftAssigment){
     for(size_t i = 11; i < data3_.size(); i++){
         ASSERT_EQ(data3_[i], data0_[i - 11]);
     }
-    for(size_t i = 0; i < 11; i++){
+    for(size_t i = 0; i < 11 && i < data3_.size(); i++){
         ASSERT_EQ(data3_[i], false);
     }
     data1_.resize(1233);
@@ -208,7 +208,7 @@ TEST_F(BitArrayTest, OperatorRightShiftAssigment){
     for(size_t i = 11; i < data3_.size(); i++){
         ASSERT_EQ(data3_[i], data0_[i - 11]);
     }
-    for(size_t i = 0; i < 11; i++){
+    for(size_t i = 0; i < 11 && i < data3_.size(); i++){
         ASSERT_EQ(data3_[i], false);
     }
 }
@@ -249,7 +249,7 @@ TEST_F(BitArrayTest, OperatorRightShift){
     for(size_t i = 11; i < data3_.size(); i++){
         ASSERT_EQ(data3_[i], data0_[i - 11]);
     }
-    for(size_t i = 0; i < 11; i++){
+    for(size_t i = 0; i < 11 && i < data3_.size(); i++){
         ASSERT_EQ(data3_[i], false);
     }
     data1_.resize(1233);
@@ -260,7 +260,7 @@ TEST_F(BitArrayTest, OperatorRightShift){
     for(size_t i = 11; i < data3_.size(); i++){
         ASSERT_EQ(data3_[i], data0_[i - 11]);
     }
-    for(size_t i = 0; i < 11; i++){
+    for(size_t i = 0; i < 11 && i < data3_.size(); i++){
         ASSERT_EQ(data3_[i], false);
     }
 }
