@@ -224,7 +224,7 @@ public:
 ***************************************************************************/
     BitArray& operator&=(const BitArray& b) {
         if(this->sizeInBits != b.sizeInBits){
-            std::cout << "operator&=: different size of arrays\n";
+            std::cerr << "operator&=: different size of arrays\n";
             return *this;
         }
         for(size_t i = 0; i < this->alignedSize; i++){
@@ -244,7 +244,7 @@ public:
 ***************************************************************************/
     BitArray& operator|=(const BitArray& b){
         if(this->sizeInBits != b.sizeInBits){
-            std::cout << "operator|=: different size of arrays\n";
+            std::cerr << "operator|=: different size of arrays\n";
             return *this;
         }
         for(size_t i = 0; i < this->alignedSize; i++){
@@ -264,7 +264,7 @@ public:
 ***************************************************************************/
     BitArray& operator^=(const BitArray& b) {
         if(this->sizeInBits != b.sizeInBits){
-            std::cout << "operator^=: different size of arrays\n";
+            std::cerr << "operator^=: different size of arrays\n";
             return *this;
         }
         for(size_t i = 0; i < this->alignedSize; i++){
@@ -503,7 +503,7 @@ public:
 ***************************************************************************/
     [[nodiscard]] size_t count() const{
         size_t counter = null;
-        for(size_t i = 0; i < this->alignedSize - 1; i++){
+        for(size_t i = 0; i + 1 < this->alignedSize; i++){
             for(size_t index = 0, j = 1; index < AlignSize; index++, j = j << 1){
                 if((this->data[i] & (Align) j) > (Align) null){
                     counter++;
@@ -528,6 +528,10 @@ public:
 *   Returned   : The value of the specified bit.
 ***************************************************************************/
     bool operator[](size_t i) const{
+        if(i >= sizeInBits){
+            std::cerr << "stack overflow (operator[])";
+            return false;
+        }
         auto pat = (Align) ((null + 1) << (AlignSize - i % AlignSize - 1));
         auto value = (bool) (this->data[i / AlignSize] & pat);
         return value;
@@ -641,7 +645,7 @@ bool operator!=(const BitArray<Align> & a, const BitArray<Align> & b) {
 template<typename Align, size_t AlignSize = sizeof(Align) * 8>
 BitArray<Align> operator&(const BitArray<Align>& b1, const BitArray<Align>& b2) {
     if(b1.size() != b2.size()){
-        std::cout << "operator&: different lengths\n";
+        std::cerr << "operator&: different lengths\n";
         return b1;
     }
     else{
@@ -664,7 +668,7 @@ BitArray<Align> operator&(const BitArray<Align>& b1, const BitArray<Align>& b2) 
 template<typename Align, size_t AlignSize = sizeof(Align) * 8>
 BitArray<Align> operator|(const BitArray<Align> & b1, const BitArray<Align> & b2) {
     if(b1.size() != b2.size()){
-        std::cout << "operator|: different lengths\n";
+        std::cerr << "operator|: different lengths\n";
         return b1;
     }
     else{
@@ -687,7 +691,7 @@ BitArray<Align> operator|(const BitArray<Align> & b1, const BitArray<Align> & b2
 template<typename Align, size_t AlignSize = sizeof(Align) * 8>
 BitArray<Align> operator^(const BitArray<Align> & b1, const BitArray<Align> & b2) {
     if(b1.size() != b2.size()){
-        std::cout << "operator^: different lengths\n";
+        std::cerr << "operator^: different lengths\n";
         return b1;
     }
     else{
