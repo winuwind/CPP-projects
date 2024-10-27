@@ -5,13 +5,24 @@ class BitArrayTest : public testing::Test {
 protected:
     BitArrayTest() :
         data0_(),
-        data1_(5),
+        data1_(1005),
         data2_(data0_),
         data3_(data1_),
         counter_help(0)
-    {}
-
-
+    {
+        for(size_t i = 0; i < 1005; i++){
+            if(i % 6 == 0){
+                data1_.reset(i);
+            }
+            else if(i % 5 == 0 || i % 3 == 0){
+                data1_.set(i);
+                counter_help++;
+            }
+            else{
+                data1_.reset(i);
+            }
+        }
+    }
 
     BitArray<size_t> data0_;
     BitArray<size_t> data1_;
@@ -22,14 +33,24 @@ protected:
 
 TEST_F(BitArrayTest, Initially) {
     ASSERT_EQ(data0_.size(), 0);
-    ASSERT_EQ(data1_.size(), 5);
+    ASSERT_EQ(data1_.size(), 1005);
     ASSERT_EQ(data2_.size(), 0);
-    ASSERT_EQ(data3_.size(), 5);
+    ASSERT_EQ(data3_.size(), 1005);
     for(size_t i = 0; i < data0_.size(); i++){
         ASSERT_EQ(data0_[i], false);
     }
     for(size_t i = 0; i < data1_.size(); i++){
-        ASSERT_EQ(data1_[i], false);
+        for(size_t i = 0; i < 1005; i++){
+            if(i % 6 == 0){
+                ASSERT_EQ(data1_[i], false);
+            }
+            else if(i % 5 == 0 || i % 3 == 0){
+                ASSERT_EQ(data1_[i], true);
+            }
+            else{
+                ASSERT_EQ(data1_[i], false);
+            }
+        }
     }
     for(size_t i = 0; i < data2_.size(); i++){
         ASSERT_EQ(data2_[i], false);
@@ -40,9 +61,10 @@ TEST_F(BitArrayTest, Initially) {
 }
 
 TEST_F(BitArrayTest, MethodsSwap) {
+    data3_ = data1_;
     data0_.swap(data1_);
     ASSERT_EQ(data1_.size(), 0);
-    ASSERT_EQ(data0_.size(), 5);
+    ASSERT_EQ(data0_.size(), 1005);
     for(size_t i = 0; i < data1_.size(); i++){
         ASSERT_EQ(data1_[i], data2_[i]);
     }
@@ -52,6 +74,11 @@ TEST_F(BitArrayTest, MethodsSwap) {
 }
 
 TEST_F(BitArrayTest, OperatorAssigment) {
+    data2_ = data2_;
+    ASSERT_EQ(data0_.size(), data2_.size());
+    for(size_t i = 0; i < data2_.size(); i++){
+        ASSERT_EQ(data2_[i], data0_[i]);
+    }
     data2_ = data0_;
     ASSERT_EQ(data0_.size(), data2_.size());
     for(size_t i = 0; i < data2_.size(); i++){
@@ -121,47 +148,49 @@ TEST_F(BitArrayTest, MethodPushBack){
 
 TEST_F(BitArrayTest, OperatorAndAssigment){
     data0_.resize(342);
-    data3_ = data2_;
-    data2_ &= data0_;
-    ASSERT_EQ(data2_, data3_);
-    data0_.resize(data2_.size());
-    data2_ &= data0_;
-    ASSERT_EQ(data0_.size(), data2_.size());
+    data3_ = data1_;
+    data1_ &= data0_;
+    ASSERT_EQ(data1_, data3_);
+    data0_.resize(data1_.size());
+    data1_ &= data0_;
+    ASSERT_EQ(data0_.size(), data1_.size());
     ASSERT_EQ(data0_.size(), data3_.size());
     for(size_t i = 0; i < data2_.size(); i++){
-        ASSERT_EQ(data2_[i], data0_[i] && data3_[i]);
+        ASSERT_EQ(data1_[i], data0_[i] && data3_[i]);
     }
 }
 
 TEST_F(BitArrayTest, OperatorOrAssigment){
     data0_.resize(342);
-    data3_ = data2_;
-    data2_ |= data0_;
-    ASSERT_EQ(data2_, data3_);
-    data0_.resize(data2_.size());
-    data2_ |= data0_;
-    ASSERT_EQ(data0_.size(), data2_.size());
+    data3_ = data1_;
+    data1_ |= data0_;
+    ASSERT_EQ(data1_, data3_);
+    data0_.resize(data1_.size());
+    data1_ |= data0_;
+    ASSERT_EQ(data0_.size(), data1_.size());
     ASSERT_EQ(data0_.size(), data3_.size());
-    for(size_t i = 0; i < data2_.size(); i++){
-        ASSERT_EQ(data2_[i], data0_[i] || data3_[i]);
+    for(size_t i = 0; i < data1_.size(); i++){
+        ASSERT_EQ(data1_[i], data0_[i] || data3_[i]);
     }
 }
 
 TEST_F(BitArrayTest, OperatorXorAssigment){
     data0_.resize(342);
-    data3_ = data2_;
-    data2_ ^= data0_;
-    ASSERT_EQ(data2_, data3_);
-    data0_.resize(data2_.size());
-    data2_ ^= data0_;
-    ASSERT_EQ(data0_.size(), data2_.size());
+    data3_ = data1_;
+    data1_ ^= data0_;
+    ASSERT_EQ(data1_, data3_);
+    data0_.resize(data1_.size());
+    data1_ ^= data0_;
+    ASSERT_EQ(data0_.size(), data1_.size());
     ASSERT_EQ(data0_.size(), data3_.size());
     for(size_t i = 0; i < data2_.size(); i++){
-        ASSERT_EQ(data2_[i], data0_[i] != data3_[i]);
+        ASSERT_EQ(data1_[i], data0_[i] != data3_[i]);
     }
 }
 
 TEST_F(BitArrayTest, OperatorLeftShiftAssigment){
+    data0_ <<= 78;
+    ASSERT_EQ(data0_.size(), 0);
     data3_ = data1_;
     data0_ = data3_;
     data3_ <<= 11;
@@ -190,6 +219,8 @@ TEST_F(BitArrayTest, OperatorLeftShiftAssigment){
 }
 
 TEST_F(BitArrayTest, OperatorRightShiftAssigment){
+    data0_ >>= 78;
+    ASSERT_EQ(data0_.size(), 0);
     data3_ = data1_;
     data0_ = data3_;
     data3_ >>= 11;
@@ -206,6 +237,8 @@ TEST_F(BitArrayTest, OperatorRightShiftAssigment){
     data3_ >>= 11;
     ASSERT_EQ(data0_.size(), data3_.size());
     for(size_t i = 11; i < data3_.size(); i++){
+        if(data3_[i] != data0_[i - 11]){
+        }
         ASSERT_EQ(data3_[i], data0_[i - 11]);
     }
     for(size_t i = 0; i < 11 && i < data3_.size(); i++){
@@ -269,6 +302,9 @@ TEST_F(BitArrayTest, MethodSet){
     data1_.resize(5678);
     data3_ = data1_;
     size_t size = data1_.size();
+    data1_.set(10000);
+    ASSERT_EQ(data1_.size(), size);
+    ASSERT_EQ((data1_ == data3_), true);
     data1_.set(7);
     ASSERT_EQ(data1_.size(), size);
     ASSERT_EQ(data1_[7], true);
@@ -282,6 +318,10 @@ TEST_F(BitArrayTest, MethodSet){
 TEST_F(BitArrayTest, MethodReset){
     data1_.resize(56789);
     size_t size = data1_.size();
+    data3_ = data1_;
+    data1_.reset(100000);
+    ASSERT_EQ(data1_.size(), size);
+    ASSERT_EQ((data1_ == data3_), true);
     data1_.reset(5);
     ASSERT_EQ(data1_.size(), size);
     ASSERT_EQ(data1_[5], false);
@@ -294,11 +334,17 @@ TEST_F(BitArrayTest, MethodReset){
 
 TEST_F(BitArrayTest, MethodAny){
     data1_.resize(12345);
+    data1_.reset();
     size_t size = data1_.size();
     bool result = data1_.any();
     ASSERT_EQ(data1_.size(), size);
     ASSERT_EQ(result, false);
     data1_.set(7);
+    result = data1_.any();
+    ASSERT_EQ(data1_.size(), size);
+    ASSERT_EQ(result, true);
+    data1_.reset();
+    data1_.set(12344);
     result = data1_.any();
     ASSERT_EQ(data1_.size(), size);
     ASSERT_EQ(result, true);
@@ -311,7 +357,7 @@ TEST_F(BitArrayTest, MethodNone){
     bool result = data1_.none();
     ASSERT_EQ(data1_.size(), size);
     ASSERT_EQ(result, false);
-    data1_.reset(data1_.size() - 1);
+    data1_.reset();
     result = data1_.none();
     ASSERT_EQ(data1_.size(), size);
     ASSERT_EQ(result, true);
@@ -327,15 +373,15 @@ TEST_F(BitArrayTest, OperatorNo){
 }
 
 TEST_F(BitArrayTest, MethodCount){
-    data0_ = data3_;
-    size_t count = data3_.count();
-    ASSERT_EQ(data0_, data3_);
+    data0_ = data1_;
+    size_t count = data1_.count();
+    ASSERT_EQ(data0_, data1_);
     ASSERT_EQ(count, /*value for data3_ which we count when init*/ counter_help);
 }
 
-//TEST_F(BitArrayTest, OperatorGetBit){
-//
-//}
+TEST_F(BitArrayTest, OperatorGetBit){
+    ASSERT_EQ(data0_[100], false);
+}
 
 //TEST_F(BitArrayTest, MethodSize){
 //
@@ -353,7 +399,7 @@ TEST_F(BitArrayTest, MethodToString){
     ASSERT_EQ(data0_, data1_);
     for(size_t i = 0; i < data1_.size(); i += 8){
         char byte = 0;
-        char bit = (char) (1 << 7);
+        int bit = 1 << 7;
         for(size_t j = 0; j < 8 && i + j < data1_.size(); j++){
             if(data1_[i + j]) {
                 byte |= bit;
