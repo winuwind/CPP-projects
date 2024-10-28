@@ -48,13 +48,16 @@ public:
 *   @Effects    : Allocates vector for array bits
 *   @Returned   : None
 ***************************************************************************/
-    explicit BitArray(size_t num_bits):
+    explicit BitArray(size_t num_bits, unsigned long value = 0):
             sizeInBits(num_bits),
             alignedSize((num_bits + AlignSize - 1) / AlignSize),
             data(new Align[alignedSize])
     {
         for(size_t i = 0; i < this->alignedSize; i++){
             this->data[i] = 0;
+        }
+        for(size_t i = 0, j = static_cast<size_t> (1) << (8 * sizeof(unsigned long) - 1); i < num_bits && i < 8 * sizeof(unsigned long); i++, j >>= 1){
+            set(i, value & j);
         }
     }
 
@@ -119,14 +122,14 @@ public:
 *   @Effects    : New size of bitset
 *   @Returned   : None
 ***************************************************************************/
-    void resize(size_t num_bits) {
+    void resize(size_t num_bits, bool value = false) {
         if(alignedSize == (num_bits + AlignSize - 1) / AlignSize){
             sizeInBits = num_bits;
             return;
         }
         BitArray other(num_bits);
         for(size_t i = 0; i < other.sizeInBits; i++){
-            if(i < this->sizeInBits && (*this)[i]){
+            if((i < this->sizeInBits && (*this)[i]) || (i >= this->sizeInBits && value)){
                 other.set(i);
             }
         }
@@ -303,7 +306,11 @@ public:
 *   @Effects    : Bit with number n is set to 1.
 *   @Returned   : BitArray &
 ***************************************************************************/
-    BitArray& set(size_t n){
+    BitArray& set(size_t n, bool value = true){
+        if(!value){
+            reset(n);
+            return *this;
+        }
         if(n > sizeInBits){
             std::cerr << "stack overflow (set(n))\n";
             return *this;
