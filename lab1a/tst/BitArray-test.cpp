@@ -11,15 +11,12 @@ protected:
         counter_help(0)
     {
         for(size_t i = 0; i < 1005; i++){
-            if(i % 6 == 0){
+            if(i % 6 == 0 || (i % 5 != 0 && i % 3 != 0)){
                 data1_.reset(i);
             }
             else if(i % 5 == 0 || i % 3 == 0){
                 data1_.set(i);
                 counter_help++;
-            }
-            else{
-                data1_.reset(i);
             }
         }
     }
@@ -40,16 +37,14 @@ TEST_F(BitArrayTest, Initially) {
         ASSERT_EQ(data0_[i], false);
     }
     for(size_t i = 0; i < data1_.size(); i++){
-        for(size_t i = 0; i < 1005; i++){
-            if(i % 6 == 0){
-                ASSERT_EQ(data1_[i], false);
-            }
-            else if(i % 5 == 0 || i % 3 == 0){
-                ASSERT_EQ(data1_[i], true);
-            }
-            else{
-                ASSERT_EQ(data1_[i], false);
-            }
+        if(i % 6 == 0){
+            ASSERT_EQ(data1_[i], false);
+        }
+        else if(i % 5 == 0 || i % 3 == 0){
+            ASSERT_EQ(data1_[i], true);
+        }
+        else{
+            ASSERT_EQ(data1_[i], false);
         }
     }
     for(size_t i = 0; i < data2_.size(); i++){
@@ -121,15 +116,12 @@ TEST_F(BitArrayTest, MethodClear){
 TEST_F(BitArrayTest, MethodPushBack){
     size_t size = data1_.size();
     for(size_t i = 0; i < 1000; i++){
-        if(i % 6 == 0){
+        if(i % 6 == 0 || (i % 5 != 0 && i % 3 != 0)){
             data1_.push_back(false);
         }
         else if(i % 5 == 0 || i % 3 == 0){
             data1_.push_back(true);
             counter_help++;
-        }
-        else{
-            data1_.push_back(false);
         }
     }
     ASSERT_EQ(data1_.size(), size + 1000);
@@ -308,6 +300,9 @@ TEST_F(BitArrayTest, MethodSet){
     data1_.set(7);
     ASSERT_EQ(data1_.size(), size);
     ASSERT_EQ(data1_[7], true);
+    data1_.set(7, false);
+    ASSERT_EQ(data1_.size(), size);
+    ASSERT_EQ(data1_[7], false);
     data1_.set();
     ASSERT_EQ(data1_.size(), size);
     for(size_t i = 0; i < size; i++){
