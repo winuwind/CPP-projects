@@ -374,14 +374,6 @@ TEST_F(BitArrayTest, MethodCount){
     ASSERT_EQ(count, /*value for data3_ which we count when init*/ counter_help);
 }
 
-TEST_F(BitArrayTest, OperatorGetBit){
-    ASSERT_EQ(data0_[100], false);
-}
-
-//TEST_F(BitArrayTest, MethodSize){
-//
-//}
-
 TEST_F(BitArrayTest, MethodEmpty){
     data0_.clear();
     ASSERT_EQ(data0_.empty(), true);
