@@ -1,16 +1,17 @@
-#ifndef BITARRAY_BITARRAY_H
-#define BITARRAY_BITARRAY_H
-
+#pragma once
 #include <iostream>
-
 
 template<typename Align = size_t, size_t AlignSize = sizeof(Align) * 8>
 class BitArray
 {
 private:
-    std::size_t sizeInBits;
-    std::size_t alignedSize;
+    size_t sizeInBits; //Размер битового массива в битах
+    size_t alignedSize; //Размер битового массива в единицах выделенной памяти
     Align *data;
+
+    size_t getIndexReverse(size_t n) const{
+        return AlignSize - n % AlignSize - 1;
+    }
 public:
     /**
 *   @Method     : BitArray - constructor
@@ -84,15 +85,9 @@ public:
 *   @Returned   : Reference to this array after operations
 ***************************************************************************/
     void swap(BitArray& b){
-        size_t sizeInBitsCopy = this->sizeInBits;
-        size_t alignedSizeCopy = this->alignedSize;
-        Align* dataCopy = this->data;
-        this->sizeInBits = b.sizeInBits;
-        this->alignedSize = b.alignedSize;
-        this->data = b.data;
-        b.sizeInBits = sizeInBitsCopy;
-        b.alignedSize = alignedSizeCopy;
-        b.data = dataCopy;
+        std::swap(sizeInBits, b.sizeInBits);
+        std::swap(alignedSize, b.alignedSize);
+        std::swap(data, b.data);
     }
 
     /**
@@ -315,7 +310,7 @@ public:
             std::cerr << "stack overflow (set(n))\n";
             return *this;
         }
-        data[n / AlignSize] |= (static_cast<Align> (1) << (AlignSize - n % AlignSize - 1));
+        data[n / AlignSize] |= (static_cast<Align> (1) << getIndexReverse(n));
         return *this;
     }
 
@@ -346,7 +341,7 @@ public:
             std::cerr << "stack overflow (reset(n))\n";
             return *this;
         }
-        Align help = AlignSize - (n % AlignSize);
+        Align help = getIndexReverse(n) + 1;
         Align pat = ~(static_cast<Align> (1) << (help - 1));
         data[n / AlignSize] &= pat;
         return *this;
@@ -379,15 +374,12 @@ public:
                 return true;
             }
         }
-        Align help = AlignSize - (sizeInBits % AlignSize);
+        Align help = getIndexReverse(sizeInBits) + 1;
         Align pat = 0;
         for(size_t i = help, j = static_cast<size_t> (1) << help; i < AlignSize; i++, j <<= 1){
             pat |= j;
         }
-        if((data[alignedSize - 1] & pat) > 0){
-            return true;
-        }
-        return false;
+        return (data[alignedSize - 1] & pat) > 0;
     }
 
     /**
@@ -444,11 +436,7 @@ public:
 *   @Returned   : The value of the specified bit.
 ***************************************************************************/
     bool operator[](size_t i) const{
-        if(i >= sizeInBits){
-            std::cerr << "stack overflow (operator[])" << std::endl;
-            return false;
-        }
-        Align pat = static_cast<size_t> (1) << (AlignSize - i % AlignSize - 1);
+        Align pat = static_cast<size_t> (1) << getIndexReverse(i);
         return (data[i / AlignSize] & pat);
     }
 
@@ -471,10 +459,7 @@ public:
 *   @Returned   : bool - true if size of bit array is null
 ***************************************************************************/
     [[nodiscard]] bool empty() const {
-        if(sizeInBits == 0){
-            return true;
-        }
-        return false;
+        return sizeInBits == 0;
     }
 
     /**
@@ -513,14 +498,12 @@ bool operator==(const BitArray<Align> & a, const BitArray<Align> & b) {
     if(a.size() != b.size()){
         return false;
     }
-    else{
-        for(size_t i = 0; i < a.size(); i++){
-            if((a[i]) != (b[i])){
-                return false;
-            }
+    for(size_t i = 0; i < a.size(); i++){
+        if((a[i]) != (b[i])){
+            return false;
         }
-        return true;
     }
+    return true;
 }
 
 /**
@@ -532,17 +515,7 @@ bool operator==(const BitArray<Align> & a, const BitArray<Align> & b) {
 ***************************************************************************/
 template<typename Align = size_t>
 bool operator!=(const BitArray<Align> & a, const BitArray<Align> & b) {
-    if(a.size() != b.size()){
-        return true;
-    }
-    else{
-        for(size_t i = 0; i < a.size(); i++){
-            if((a[i]) != (b[i])){
-                return true;
-            }
-        }
-        return false;
-    }
+    return !(a == b);
 }
 
 /**
@@ -559,11 +532,9 @@ BitArray<Align> operator&(const BitArray<Align>& b1, const BitArray<Align>& b2) 
         std::cerr << "operator&: different lengths\n";
         return b1;
     }
-    else{
-        BitArray<Align> other(b1);
-        other &= b2;
-        return other;
-    }
+    BitArray<Align> other(b1);
+    other &= b2;
+    return other;
 }
 
 /**
@@ -580,11 +551,9 @@ BitArray<Align> operator|(const BitArray<Align> & b1, const BitArray<Align> & b2
         std::cerr << "operator|: different lengths\n";
         return b1;
     }
-    else{
-        BitArray<Align> other(b1);
-        other |= b2;
-        return other;
-    }
+    BitArray<Align> other(b1);
+    other |= b2;
+    return other;
 }
 
 /**
@@ -601,11 +570,7 @@ BitArray<Align> operator^(const BitArray<Align> & b1, const BitArray<Align> & b2
         std::cerr << "operator^: different lengths\n";
         return b1;
     }
-    else{
-        BitArray<Align> other(b1);
-        other ^= b2;
-        return other;
-    }
+    BitArray<Align> other(b1);
+    other ^= b2;
+    return other;
 }
-
-#endif //BITARRAY_BITARRAY_H
