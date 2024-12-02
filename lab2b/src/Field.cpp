@@ -1,84 +1,33 @@
 #include "Field.h"
 
-Field::Field() :
-height(67),
-width(67)
+void Field::Init(){
+    plane = std::vector<Cell>(size.width * size.height);
+    for(unsigned i = 0; i < size.width * size.height; i++){
+        plane[i] = Cell::Dead;
+    }
+}
+
+Field::Field():
+        size(67, 67)
 {
-    Plane = new bool * [height];
-    for (int i = 0; i < height; i++) {
-        Plane[i] = new bool[width];
-        for (int j = 0; j < width; j++) {
-            Plane[i][j] = (bool) (((j % 5) + 3) % 2);
-        }
-    }
+    Init();
 }
 
-Field::Field(std::string & filename) :
-    height(67),
-    width(67)
+Field::Field(Size size_):
+        size(size_)
 {
-    std::ifstream file;
-    file.open(filename.c_str(), std::ios::in);
-    std::string line;
-    while(std::getline(file, line)){
-        if(line.find("#S") == 0){
-            std::istringstream is( line );
-            std::string help;
-            is >> help;
-            is >> width;
-            is >> height;
-            break;
-        }
-    }
-    file.close();
-    file.open(filename.c_str(), std::ios::in);
-    Plane = new bool * [height];
-    for (int i = 0; i < height; i++) {
-        Plane[i] = new bool[width];
-        for(int j = 0; j < width; j++){
-            Plane[i][j] = false;
-        }
-    }
-    while(std::getline(file, line)){
-        if(line[0] == '#'){
-            continue;
-        }
-        std::istringstream is( line );
-        int x, y;
-        is >> x;
-        is >> y;
-        Plane[y % height][x % width] = true;
-    }
-    file.close();
+    Init();
 }
 
-Field::~Field(){
-    Delete();
+Cell Field::Get(Coordinates point){
+    return Field::plane[(point.y % size.height) * size.width + (point.x % size.width)];
 }
 
-void Field::Delete() {
-    if(Field::Plane != nullptr){
-        for(int i = 0; i < Field::height; i++){
-            if(Field::Plane[i] != nullptr){
-                delete[] Field::Plane[i];
-                Field::Plane[i] = nullptr;
-            }
-        }
-        delete[] Field::Plane;
-        Field::Plane = nullptr;
-    }
+void Field::Set(Coordinates point, Cell state){
+    plane[(point.y % size.height) * size.width + (point.x % size.width)] = state;
 }
 
-bool Field::Get(Coords point){
-    return Field::Plane[point.y][point.x];
-}
-
-void Field::Set(Coords point, bool value){
-    Plane[point.y][point.x] = value;
-}
-
-Coords & Field::GetSize(Coords & size) const {
-    size.x = width;
-    size.y = height;
-    return size;
+Size & Field::GetSize() {
+    Size & size_ref(size);
+    return size_ref;
 }
