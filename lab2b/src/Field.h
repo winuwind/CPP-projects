@@ -1,31 +1,34 @@
 #pragma once
 
-#include <fstream>
-#include <sstream>
+#include <vector>
+#include <string>
+
 #include "Coordinates.h"
+
+enum class Cell{
+    Dead,
+    Alive
+};
+
+struct Size{
+    unsigned width;
+    unsigned height;
+};
 
 class Field{
 private:
-    unsigned height;
-    unsigned width;
-    bool** Plane;
-    void Delete();
+    Size size;
+    std::vector<Cell> plane;
+
+    void Init();
 public:
     Field();
 
-    explicit Field(std::string & file);
+    explicit Field(Size size_);
 
-    bool Get(Coords point);
+    Cell Get(Coordinates point);
 
-    void Set(Coords point, bool value);
+    void Set(Coordinates point, Cell state);
 
-    [[nodiscard]] Coords & GetSize(Coords & size) const;
-
-    ~Field();
+    [[nodiscard]] Size & GetSize();
 };
-
-
-
-
-
-
