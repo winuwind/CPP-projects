@@ -3,44 +3,50 @@
 #include "Model.h"
 #include "graphics.h"
 
-#undef main
+#include <map>
+
+enum class State{
+    Completed,
+    ViewMode,
+    SimpleMode
+};
+
+enum class Command{
+    dump,
+    tick,
+    t,
+    help,
+    exit,
+    draw
+};
 
 class Controller{
 private:
-    Field field;
-    Rule rules;
+    Model model;
     std::string out;
-    bool flagWorkGraphics;
-    bool flagWorkProgram;
+    State state;
     Graphics graphics;
+    Field & field;
+    std::map<Command, void(Controller::*)(const std::string &)> functions;
+    friend Model;
+
+    void InitFunctions();
 public:
     Controller();
 
-    Controller(std::string & in, std::string & out, unsigned iterations);
+    Controller(const std::string & in, std::string & out, unsigned iterations);
 
-    ~Controller();
+    void Dump(const std::string & arg);
 
-    void Save(std::string & filename);
+    void Tick(const std::string & arg);
 
-    void GetFilename(std::string & command);
+    void Help(const std::string & arg);
 
-    void Tick(std::string & command);
+    void Draw(const std::string & arg);
 
-    void CheckCommand(std::string & command);
+    void Exit(const std::string & arg);
 
-    void main();
+    void RunCommand(const std::string & command);
+
+    void run();
 };
-
-
-
-
-
-
-
-
-
-
-
-
-
-
