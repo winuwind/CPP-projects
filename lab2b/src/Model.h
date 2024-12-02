@@ -1,22 +1,32 @@
 #pragma once
 
-#include <vector>
+#include <bitset>
+
 #include "Field.h"
 #include "Errors.h"
 
-class Rule{
-public:
-    std::vector<bool> forLive;
-    std::vector<bool> forBirth;
-    std::string Name;
-    Coords size;
+class Model{
+private:
     void Init();
-    Rule();
+    std::bitset<9> forLive;
+    std::bitset<9> forBirth;
+    Size size;
+    std::string Name;
+    Field field;
+public:
 
-    explicit Rule(std::string & filename);
+    Model();
 
-    void Step(Field & field);
+    explicit Model(const std::string & filename);
 
-    void Step(Field & field, unsigned n);
+    void Step();
+
+    void Step(unsigned n);
+
+    void Save(const std::string & filename);
+
+    std::string & GetName();
+
+    Field & GetField();
 };
 
