@@ -1,143 +1,133 @@
 #include "Controller.h"
 
-Controller::Controller() {
+#include <sstream>
+
+void Controller::InitFunctions() {
+    void(Controller::*func)(const std::string &);
+    func = & Controller::Exit;
+    functions.insert(std::pair(Command::exit, func));
+    func = & Controller::Help;
+    functions.insert(std::pair(Command::help, func));
+    func = & Controller::Draw;
+    functions.insert(std::pair(Command::draw, func));
+    func = & Controller::Tick;
+    functions.insert(std::pair(Command::t, func));
+    functions.insert(std::pair(Command::tick, func));
+    func = & Controller::Dump;
+    functions.insert(std::pair(Command::dump, func));
+}
+
+Controller::Controller() :
+        model(),
+        field(model.GetField())
+    {
     out = "out.lif";
-    flagWorkProgram = true;
-    flagWorkGraphics = false;
+    state = State::SimpleMode;
+    InitFunctions();
 }
 
-Controller::Controller(std::string &in, std::string &out, unsigned int iterations) :
-        rules(in),
-        field(in),
-        graphics(field, rules.Name),
+Controller::Controller(const std::string &in, std::string & out, unsigned int iterations) :
+        model(in),
         out(out),
-        flagWorkGraphics(false),
-        flagWorkProgram(true)
+        field(model.GetField()),
+        graphics(model.GetField(), model.GetName())
 {
-    rules.Step(field, iterations);
+    model.Step(iterations);
+    state = State::SimpleMode;
+    InitFunctions();
 }
 
-Controller::~Controller() = default;
-
-void Controller::Save(std::string &filename) {
-    std::ofstream file(filename, std::ios::out);
-    file.write("#Life 1.06\n", 11);
-    file.write("#N ", 3);
-    file.write(rules.Name.c_str(), static_cast<int>(rules.Name.length()));
-    file.write("\n", 1);
-    file.write("#S ", 3);
-    file.write(std::to_string(rules.size.x).c_str(), std::to_string(rules.size.x).length());
-    file.write(" ", 1);
-    file.write(std::to_string(rules.size.y).c_str(), std::to_string(rules.size.y).length());
-    file.write("\n", 1);
-    file.write("#R B", 4);
-    for(int i = 0; i <= 9; i++){
-        if(rules.forBirth[i]){
-            file.write(std::to_string(i).c_str(), 1);
-        }
+void Controller::RunCommand(const std::string &line) {
+    std::istringstream in(line);
+    std::string command;
+    std::string arg;
+    in >> command;
+    in >> arg;
+    Command command_;
+    if(command == "exit"){
+        command_ = Command::exit;
     }
-    file.write("/S", 2);
-    for(int i = 0; i <= 9; i++){
-        if(rules.forLive[i]){
-            file.write(std::to_string(i).c_str(), 1);
-        }
+    else if(command == "tick"){
+        command_ = Command::tick;
     }
-    file.write("\n", 1);
-    Coords size(0, 0);
-    size = field.GetSize(size);
-    for(int y = 0; y < size.y; y++){
-        for(int x = 0; x < size.x; x++){
-            Coords point(x, y);
-            if(field.Get(point)){
-                std::string line(std::to_string(x));
-                line.append(" ");
-                line.append(std::to_string(y));
-                line.append("\n");
-                file.write(line.c_str(), (int) line.length());
-            }
-        }
-    }
-    file.close();
-}
-
-void Controller::GetFilename(std::string &command) {
-    std::string filename;
-    for(size_t i = 5; i < command.size(); i++){
-        filename.push_back(command[i]);
-    }
-    Save(filename);
-}
-
-void Controller::Tick(std::string &command) {
-    std::string n_string;
-    size_t delta = 2;
-    int n;
-    if(command.find("tick") == 0){
-        delta = 5;
-    }
-    if(command == "tick" || command == "t"){
-        n = 1;
-    }
-    else {
-        for (size_t i = delta; i < command.size(); i++) {
-            if (!isdigit(command[i])) {
-                Error::Command::print_error(command);
-                break;
-            }
-            n_string.push_back(command[i]);
-        }
-        n = std::stoi(n_string);
-    }
-    rules.Step(field, n);
-}
-
-void Controller::CheckCommand(std::string &command) {
-    if(command.find("dump") == 0){
-        GetFilename(command);
-    }
-    else if(command.find('t') == 0){
-        Tick(command);
-    }
-    else if(command == "exit"){
-        Save(out);
-        flagWorkProgram = false;
+    else if(command == "t"){
+        command_ = Command::t;
     }
     else if(command == "help"){
-        Error::PrintListOfCommands();
+        command_ = Command::help;
     }
     else if(command == "draw"){
-        graphics.Draw(field);
-        SDL_ShowWindow(graphics.window);
-        flagWorkGraphics = true;
-        SDL_RenderPresent(graphics.renderer);
+        command_ = Command::draw;
+    }
+    else if(command == "dump"){
+        command_ = Command::dump;
     }
     else{
-        Error::Command::print_error(command);
+        Error::Command::print_error_command(command);
+        return;
+    }
+    (this->*functions[command_])(arg);
+}
+
+void Controller::Dump(const std::string & filename) {
+    model.Save(filename);
+}
+
+void Controller::Tick(const std::string & arg) {
+    size_t n = 1;
+    if(!arg.empty()){
+        std::stoull(arg);
+    }
+    model.Step(n);
+}
+
+void Controller::Exit(const std::string & arg) {
+    model.Save(out);
+    state = State::Completed;
+    if(!arg.empty()){
+        Error::Command::print_error_argument(arg);
     }
 }
 
-void Controller::main() {
+void Controller::Draw(const std::string & arg) {
+    graphics.Draw(field);
+    SDL_ShowWindow(graphics.window);
+    SDL_RenderPresent(graphics.renderer);
+    state = State::ViewMode;
+    if(!arg.empty()){
+        Error::Command::print_error_argument(arg);
+    }
+}
+
+void Controller::Help(const std::string & arg) {
+    Error::PrintListOfCommands();
+    if(!arg.empty()){
+        Error::Command::print_error_argument(arg);
+    }
+}
+
+void Controller::run() {
     graphics.Draw(field);
     SDL_RenderPresent(graphics.renderer);
     SDL_Event event;
     bool flag_scroll = false;
-    while (flagWorkProgram) {
-        while (flagWorkGraphics) {
+    while (state != State::Completed) {
+        while (state == State::ViewMode) {
             if(flag_scroll){
-                rules.Step(field);
+                model.Step();
                 graphics.Draw(field);
                 SDL_RenderPresent(graphics.renderer);
             }
             while (SDL_PollEvent(&event)) {
                 if (event.type == SDL_QUIT) {
                     SDL_HideWindow(graphics.window);
-                    flagWorkGraphics = false;
+                    state = State::SimpleMode;
                     break;
                 }
                 if (event.type == SDL_KEYDOWN) {
                     if(event.key.keysym.scancode == SDL_SCANCODE_ESCAPE){
                         SDL_HideWindow(graphics.window);
-                        flagWorkGraphics = false;
+                        state = State::SimpleMode;
                         break;
                     }
                     else if(event.key.keysym.scancode == SDL_SCANCODE_RIGHT){
@@ -149,7 +139,7 @@ void Controller::main() {
                         break;
                     }
                     else{
-                        rules.Step(field);
+                        model.Step();
                         graphics.Draw(field);
                         SDL_RenderPresent(graphics.renderer);
                     }
@@ -159,8 +149,13 @@ void Controller::main() {
                     int k = static_cast<int>(graphics.k);
                     SDL_GetMouseState(&x, &y);
                     x /= k; y /= k;
-                    Coords point(x, y);
-                    field.Set(point, !field.Get(point));
+                    Coordinates point(x, y);
+                    if(field.Get(point) == Cell::Alive){
+                        field.Set(point, Cell::Dead);
+                    }
+                    else{
+                        field.Set(point, Cell::Alive);
+                    }
                     graphics.Draw(field);
                     SDL_RenderPresent(graphics.renderer);
                 }
@@ -168,6 +163,6 @@ void Controller::main() {
         }
         std::string command;
         std::getline(std::cin, command);
-        CheckCommand(command);
+        RunCommand(command);
     }
 }
