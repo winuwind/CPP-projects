@@ -1,5 +1,7 @@
 #include "Controller.h"
 
+#undef main
+
 int main(int argc, char** argv) {
     std::string in;
     std::string out;
@@ -24,7 +26,7 @@ int main(int argc, char** argv) {
                 std::string x_str;
                 for(int j = 13; j < str.length(); j++){
                     if (!isdigit(str[j])) {
-                        Error::Command::print_error(str);
+                        Error::Parameters::print_error(argv[i]);
                         break;
                     }
                     x_str.push_back(str[j]);
@@ -72,6 +74,6 @@ int main(int argc, char** argv) {
         }
     }
     Controller example(in_ref, out_ref, x);
-    example.main();
+    example.run();
     return 0;
 }
