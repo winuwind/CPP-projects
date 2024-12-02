@@ -15,17 +15,21 @@ public:
     }
     class Command{
     public:
-        static void print_error(std::string & command){
+        static void print_error_command(const std::string & command){
             std::cout << "The entered command \"" << command <<"\" does not match the pattern" << std::endl;
+            PrintListOfCommands();
+        }
+        static void print_error_argument(const std::string & arg){
+            std::cout << "The entered command mustn't have some arguments, but command has argument:" << arg << std::endl;
             PrintListOfCommands();
         }
     };
     class File{
     public:
-        static void error_file(std::string & filename) {
+        static void error_file(const std::string & filename) {
             std::cout << "Unable to open file with filename \"" << filename << "\", default script will be run" << std::endl;
         }
-        static void error_format(std::string & filename){
+        static void error_format(const std::string & filename){
             std::cout << "Incorrect format of file with filename \"" << filename << "\", default script will be run" << std::endl;
         }
         static void error_data(){
@@ -43,5 +47,3 @@ public:
         }
     };
 };
-
-
