@@ -1,3 +1,9 @@
 [submodule "lab1a/lib/googletest"]
 	path = lab1a/lib/googletest
 	url = https://github.com/google/googletest.git
+[submodule "lab2a/lib/googletest"]
+	path = lab2a/lib/googletest
+	url = https://github.com/google/googletest.git
+[submodule "lab2b/lib/SDL"]
+	path = lab2b/lib/SDL
+	url = https://github.com/libsdl-org/SDL.git
