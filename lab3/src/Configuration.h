@@ -1,15 +1,17 @@
 #pragma once
 
 #include "Converters.h"
-#include <sstream>
+#include <vector>
 
 class Configuration{
+private:
+    std::vector<std::unique_ptr<Creator>> creators;
 public:
-    std::vector<Creator*> creators;
-
     Configuration();
 
     explicit Configuration(std::string & filepath, std::vector<std::string> & arr_in, WAV & wav);
 
     static void PrintSyntax();
+
+    std::vector<std::unique_ptr<Creator>> & GetTransformations();
 };
