@@ -1,23 +1,27 @@
 #pragma once
 
-#include <iostream>
 #include <string>
-#include <vector>
 #include "WAV.h"
-#include <cmath>
+#include <memory>
 
 class Converter{
-public:
+private:
     std::string Name;
     short* data;
     unsigned size;
     unsigned start;
-
-    Converter();
-
+protected:
+    Converter(std::string & Name, short* data, unsigned size, unsigned start);
+public:
     virtual void Convert() = 0;
 
     virtual ~Converter();
+
+    [[nodiscard]] short* GetData() const;
+
+    [[nodiscard]] unsigned GetSize() const;
+
+    [[nodiscard]] unsigned GetStart() const;
 };
 
 class ConverterMute : public Converter{
@@ -34,10 +38,10 @@ public:
 };
 
 class ConverterMix : public Converter{
-public:
+private:
     short* data_add;
     unsigned size_add;
-
+public:
     ConverterMix();
 
     explicit ConverterMix(short * data, unsigned size, short * data_add, unsigned size_add, unsigned start);
@@ -48,11 +52,11 @@ public:
 };
 
 class ConverterDelay : public Converter{
-public:
+private:
     double dryLevel;
     double wetLevel;
     double feedback;
-
+public:
     ConverterDelay();
 
     explicit ConverterDelay(short *data, unsigned int size, unsigned int start, double dryLevel, double wetLevel, double feedback);
@@ -63,58 +67,64 @@ public:
 };
 
 class Creator{
-public:
+private:
     short* data;
     unsigned size;
     unsigned start;
-
-    Creator();
-
-    virtual Converter* factoryMethod() = 0;
+protected:
+    Creator(short* data, unsigned size, unsigned start);
+public:
+    virtual std::unique_ptr<Converter> factoryMethod() = 0;
 
     virtual ~Creator();
+
+    [[nodiscard]] short* GetData() const;
+
+    [[nodiscard]] unsigned GetSize() const;
+
+    [[nodiscard]] unsigned GetStart() const;
 };
 
 class CreatorMute : public Creator{
-public:
+private:
     unsigned end;
-
+public:
     CreatorMute();
 
     explicit CreatorMute(WAV & wav, unsigned start, unsigned end);
 
-    Converter* factoryMethod() override;
+    std::unique_ptr<Converter> factoryMethod() override;
 
     ~CreatorMute() override;
 };
 
 class CreatorMix : public Creator{
-public:
+private:
     std::string filepath_add;
     WAV * wav_add_pointer;
-
+public:
     CreatorMix();
 
     explicit CreatorMix(WAV & wav, std::string & filepath_add, unsigned start);
 
-    Converter* factoryMethod() override;
+    std::unique_ptr<Converter> factoryMethod() override;
 
     ~CreatorMix() override;
 };
 
 class CreatorDelay : public Creator{
-public:
+private:
     double dryLevel;
     double wetLevel;
     double feedback;
-
+public:
     CreatorDelay();
 
     explicit CreatorDelay(WAV & wav);
 
     explicit CreatorDelay(WAV & wav, double dryLevel, double wetLevel, double feedback);
 
-    Converter* factoryMethod() override;
+    std::unique_ptr<Converter> factoryMethod() override;
 
     ~CreatorDelay() override;
 };
