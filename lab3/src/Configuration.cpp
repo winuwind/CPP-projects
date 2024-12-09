@@ -1,5 +1,9 @@
 #include "Configuration.h"
 
+#include <sstream>
+#include <fstream>
+#include <iostream>
+
 Configuration::Configuration() = default;
 
 Configuration::Configuration(std::string & filepath, std::vector<std::string> & arr_in, WAV & wav) {
@@ -20,8 +24,7 @@ Configuration::Configuration(std::string & filepath, std::vector<std::string> & 
                 std::cerr << "bad syntax in configuration file: " << line << std::endl;
                 continue;
             }
-            Creator* creator_p = new CreatorMute(wav, start, end);
-            creators.push_back(creator_p);
+            creators.push_back(std::make_unique<CreatorMute>(wav, start, end));
         }
         else if(str == "mix"){
             is >> str;
@@ -56,13 +59,11 @@ Configuration::Configuration(std::string & filepath, std::vector<std::string> & 
                 std::cerr << "Bad syntax in configuration file: " << line << std::endl;
                 continue;
             }
-            Creator* creator_p = new CreatorMix(wav, arr_in[index - 1], start);
-            creators.push_back(creator_p);
+            creators.push_back(std::make_unique<CreatorMix>(wav, arr_in[index - 1], start));
         }
         else if(str == "delay"){
             if(is.eof()){
-                Creator* creator_p = new CreatorDelay(wav);
-                creators.push_back(creator_p);
+                creators.push_back(std::make_unique<CreatorDelay>(wav));
             }
             else{
                 double dryLevel = 0.5;
@@ -78,8 +79,7 @@ Configuration::Configuration(std::string & filepath, std::vector<std::string> & 
                     std::cerr << "dryLevel, wetLevel and feedback must be real numbers, 0 <= dryLevel + wetLevel <= 1, 0 <= feedback <= 1" << std::endl;
                     continue;
                 }
-                Creator* creator_p = new CreatorDelay(wav, dryLevel, wetLevel, feedback);
-                creators.push_back(creator_p);
+                creators.push_back(std::make_unique<CreatorDelay>(wav, dryLevel, wetLevel, feedback));
             }
         }
         else{
@@ -96,4 +96,8 @@ void Configuration::PrintSyntax() {
     std::cout << R"("mix $i start" - mix with the stream from the file via the reference starting from "start", i and start must be non-negative integers, i must not be equal zero)" << std::endl;
     std::cout << R"("delay <dryLevel = 0.5> <wetLevel = 0.5> <feedback = 0.3>" - creating an echo effect, dryLevel and wetLevel are sound mixing coefficients, feedback is echo attenuation coefficient)" << std::endl;
     std::cout << "dryLevel, wetLevel and feedback must be real numbers, 0 <= dryLevel + wetLevel <= 1, 0 <= feedback <= 1" << std::endl;
+}
+
+std::vector<std::unique_ptr<Creator>> & Configuration::GetTransformations() {
+    return creators;
 }
