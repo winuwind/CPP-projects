@@ -1,5 +1,7 @@
 #include "Converters.h"
 
+#include <vector>
+
 Converter::~Converter() = default;
 
 ConverterMute::~ConverterMute() = default;
@@ -18,29 +20,51 @@ CreatorMix::~CreatorMix() {
 
 CreatorDelay::~CreatorDelay() = default;
 
-Converter::Converter() {
-    data = nullptr;
-    size = 0;
-    start = 0;
-}
-
-ConverterMute::ConverterMute() {
-    Name = "Mute";
-    data = nullptr;
-    size = 0;
-    start = 0;
-    end = 0;
-}
-
-ConverterMute::ConverterMute(short* data, unsigned size, unsigned int start, unsigned int end) {
-    Name = "Mute";
+Converter::Converter(std::string & Name, short* data, unsigned size, unsigned start) {
+    this->Name = Name;
     this->data = data;
     this->size = size;
     this->start = start;
+}
+
+short* Converter::GetData() const {
+    return data;
+}
+
+unsigned Converter::GetSize() const {
+    return size;
+}
+
+unsigned Converter::GetStart() const {
+    return start;
+}
+
+short* Creator::GetData() const {
+    return data;
+}
+
+unsigned Creator::GetSize() const {
+    return size;
+}
+
+unsigned Creator::GetStart() const {
+    return start;
+}
+
+ConverterMute::ConverterMute() :
+        Converter((std::string &) "Mute", nullptr, 0, 0) {
+    end = 0;
+}
+
+ConverterMute::ConverterMute(short* data, unsigned size, unsigned int start, unsigned int end) :
+        Converter((std::string &) "Mute", data, size, start) {
     this->end = end;
 }
 
 void ConverterMute::Convert(){
+    short* data = GetData();
+    unsigned size = GetSize();
+    unsigned start = GetStart();
     unsigned frequency = 44100;
     start *= frequency; end *= frequency;
     if(start >= size){
@@ -51,25 +75,22 @@ void ConverterMute::Convert(){
     }
 }
 
-ConverterMix::ConverterMix() {
-    Name = "Mix";
-    data = nullptr;
-    size = 0;
-    start = 0;
+ConverterMix::ConverterMix() :
+        Converter((std::string &) "Mix", nullptr, 0, 0){
     data_add = nullptr;
     size_add = 0;
 }
 
-ConverterMix::ConverterMix(short *data, unsigned int size, short *data_add, unsigned int size_add,unsigned int start) {
-    this->data = data;
-    this->size = size;
+ConverterMix::ConverterMix(short *data, unsigned int size, short *data_add, unsigned int size_add,unsigned int start) :
+        Converter((std::string &) "Mix", data, size, start){
     this->data_add = data_add;
     this->size_add = size_add;
-    this->start = start;
-    Name = "Mix";
 }
 
 void ConverterMix::Convert(){
+    short* data = GetData();
+    unsigned size = GetSize();
+    unsigned start = GetStart();
     unsigned frequency = 44100;
     start *= frequency;
     short data1 = 0, data2 = 0;
@@ -79,27 +100,24 @@ void ConverterMix::Convert(){
     }
 }
 
-ConverterDelay::ConverterDelay() {
-    data = nullptr;
-    size = 0;
-    start = 0;
-    Name = "Delay";
+ConverterDelay::ConverterDelay() :
+        Converter((std::string &) "Delay", nullptr, 0, 0){
     dryLevel = 0.5;
     wetLevel = 0.5;
     feedback = 0.3;
 }
 
-ConverterDelay::ConverterDelay(short *data, unsigned int size, unsigned int start, double dryLevel, double wetLevel, double feedback) {
-    this->data = data;
-    this->size = size;
-    Name = "Delay";
-    this->start = start;
+ConverterDelay::ConverterDelay(short *data, unsigned int size, unsigned int start, double dryLevel, double wetLevel, double feedback) :
+        Converter((std::string &) "Delay", data, size, start){
     this->dryLevel = dryLevel;
     this->wetLevel = wetLevel;
     this->feedback = feedback;
 }
 
 void ConverterDelay::Convert() {
+    short* data = GetData();
+    unsigned size = GetSize();
+    unsigned start = GetStart();
     std::vector<short> buffer(start, 0);
     for(unsigned i = 0; i < start; i++){
         buffer[i] = data[i];
@@ -120,77 +138,72 @@ void ConverterDelay::Convert() {
     }
 }
 
-Creator::Creator() {
-    data = nullptr;
-    size = 0;
-    start = 0;
+Creator::Creator(short* data, unsigned size, unsigned start) {
+    this->data = data;
+    this->size = size;
+    this->start = start;
 }
 
-CreatorMute::CreatorMute() {
-    data = nullptr;
-    size = 0;
-    start = 0;
+CreatorMute::CreatorMute() :
+        Creator(nullptr, 0, 0){
     end = 0;
 }
 
-CreatorMute::CreatorMute(WAV &wav, unsigned int start, unsigned int end) {
-    data = wav.data_ret()->data;
-    size = wav.data_ret()->size;
-    this->start = start;
+CreatorMute::CreatorMute(WAV &wav, unsigned int start, unsigned int end) :
+        Creator(wav.data_ret()->data, wav.data_ret()->size, start){
     this->end = end;
 }
 
-CreatorMix::CreatorMix() {
-    data = nullptr;
-    size = 0;
-    start = 0;
+CreatorMix::CreatorMix() :
+        Creator(nullptr, 0, 0){
     wav_add_pointer = nullptr;
 }
 
-CreatorMix::CreatorMix(WAV &wav, std::string & filepath_add, unsigned int start) {
-    data = wav.data_ret()->data;
-    size = wav.data_ret()->size;
+CreatorMix::CreatorMix(WAV &wav, std::string & filepath_add, unsigned int start) :
+        Creator(wav.data_ret()->data, wav.data_ret()->size, start){
     this->filepath_add = filepath_add;
-    this->start = start;
     wav_add_pointer = nullptr;
 }
 
-CreatorDelay::CreatorDelay() {
-    data = nullptr;
-    size = 0;
-    start = 0;
+CreatorDelay::CreatorDelay() :
+        Creator(nullptr, 0, 0){
     dryLevel = 0.5;
     wetLevel = 0.5;
     feedback = 0.3;
 }
 
-CreatorDelay::CreatorDelay(WAV &wav) {
-    data = wav.data_ret()->data;
-    size = wav.data_ret()->size;
-    this->start = 2205;
+CreatorDelay::CreatorDelay(WAV &wav) :
+        Creator(wav.data_ret()->data, wav.data_ret()->size, 2205){
     dryLevel = 0.5;
     wetLevel = 0.5;
     feedback = 0.3;
 }
 
-CreatorDelay::CreatorDelay(WAV &wav, double dryLevel, double wetLevel, double feedback) {
-    data = wav.data_ret()->data;
-    size = wav.data_ret()->size;
-    this->start = 2205;
+CreatorDelay::CreatorDelay(WAV &wav, double dryLevel, double wetLevel, double feedback) :
+        Creator(wav.data_ret()->data, wav.data_ret()->size, 2205){
     this->dryLevel = dryLevel;
     this->wetLevel = wetLevel;
     this->feedback = feedback;
 }
 
-Converter* CreatorMute::factoryMethod(){
-    return new ConverterMute(data, size, start, end);
+std::unique_ptr<Converter> CreatorMute::factoryMethod(){
+    short* data = GetData();
+    unsigned size = GetSize();
+    unsigned start = GetStart();
+    return std::make_unique<ConverterMute>(data, size, start, end);
 }
 
-Converter* CreatorMix::factoryMethod() {
+std::unique_ptr<Converter> CreatorMix::factoryMethod() {
+    short* data = GetData();
+    unsigned size = GetSize();
+    unsigned start = GetStart();
     wav_add_pointer = new WAV(filepath_add);
-    return new ConverterMix(data, size, wav_add_pointer->data_ret()->data, wav_add_pointer->data_ret()->size, start);
+    return std::make_unique<ConverterMix>(data, size, wav_add_pointer->data_ret()->data, wav_add_pointer->data_ret()->size, start);
 }
 
-Converter *CreatorDelay::factoryMethod() {
-    return new ConverterDelay(data, size, start, dryLevel, wetLevel, feedback);
+std::unique_ptr<Converter> CreatorDelay::factoryMethod() {
+    short* data = GetData();
+    unsigned size = GetSize();
+    unsigned start = GetStart();
+    return std::make_unique<ConverterDelay>(data, size, start, dryLevel, wetLevel, feedback);
 }
