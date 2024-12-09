@@ -1,19 +1,18 @@
 #include "Controller.h"
 
-Controller::Controller(std::string &filepath_out, std::string &filepath_config, std::vector<std::string> &arr_in, WAV & wav) :
-    wav(wav),
-    arr_in(arr_in),
-    filepath_out(filepath_out)
+Controller::Controller(std::string &filepath_out, std::string &filepath_config, std::vector<std::string> &arr_in) :
+        arr_in(arr_in),
+        filepath_out(filepath_out)
 {
-    this->config = Configuration(filepath_config, arr_in, wav);
+    wav = WAV(arr_in[0]);
+    config = Configuration(filepath_config, arr_in, wav);
 }
 
 void Controller::main() {
-    for(auto & creator : config.creators){
-        Converter* converter = creator->factoryMethod();
+    std::vector<std::unique_ptr<Creator>> & creators = config.GetTransformations();
+    for(auto & creator : creators){
+        std::unique_ptr<Converter> converter = creator->factoryMethod();
         converter->Convert();
-        delete converter;
-        delete creator;
     }
     wav.Write(filepath_out);
 }
