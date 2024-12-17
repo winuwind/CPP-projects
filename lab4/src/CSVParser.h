@@ -70,7 +70,7 @@ template<typename ...Types> CSVParser<Types...>::CSVParser(std::ifstream & file,
 }
 
 template<typename ...Types> Iterator<Types...> CSVParser<Types...>::begin(){
-    return Iterator<Types...>(*this, State::Normal);
+    return Iterator<Types...>(*this, State::Start);
 }
 
 template<typename ...Types> Iterator<Types...> CSVParser<Types...>::end(){
@@ -80,4 +80,11 @@ template<typename ...Types> Iterator<Types...> CSVParser<Types...>::end(){
 template<typename ...Types> void CSVParser<Types...>::ReadLine(){
     std::getline(file_, lastLine_, settings_.delimLines_);
     position_ += lastLine_.length();
+    while(!lastLine_.empty() && lastLine_[lastLine_.length() - 1] == settings_.escapeSymbol_){
+        lastLine_[lastLine_.length() - 1] = settings_.delimLines_;
+        std::string newLine;
+        std::getline(file_, newLine, settings_.delimLines_);
+        lastLine_ += newLine;
+        position_ += newLine.length();
+    }
 }
