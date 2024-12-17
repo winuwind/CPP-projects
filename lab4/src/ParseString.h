@@ -3,6 +3,16 @@
 #include <sstream>
 #include <tuple>
 
+void PutToken(std::string & token, std::string & value){
+    token = value;
+}
+
+template<typename TokenT>
+void PutToken(TokenT & token, std::string  & value){
+    std::istringstream is(value);
+    is >> token;
+}
+
 template<typename TupleT, unsigned long long... Is>
 TupleT ParseStringManual(TupleT & tuple, std::string & str, char delim, char escapeSymbol, std::index_sequence<Is...>){
     std::istringstream isStr(str);
@@ -17,14 +27,12 @@ TupleT ParseStringManual(TupleT & tuple, std::string & str, char delim, char esc
             elem += nextElem;
 
         }
-        std::istringstream is(elem);
-        is >> token;
+        PutToken(token, elem);
     };
 
     (Func(std::get<Is>(tuple)), ...);
     return tuple;
 }
-
 
 template<typename TupleT, std::size_t TupSize = std::tuple_size_v<TupleT>>
 TupleT ParseString(TupleT & tuple_, std::string & str, char delim, char escapeSymbol) {
