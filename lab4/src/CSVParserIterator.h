@@ -49,13 +49,12 @@ template<typename ...Types> Iterator<Types...> & Iterator<Types...>::operator++(
     parser_.ReadLine();
     if (parser_.file_.eof()) {
         state_ = State::End;
-        return *this;
     }
     return *this;
 }
 
 template<typename ...Types> std::tuple<Types...> & Iterator<Types...>::operator*(){
-    tuple_ = ParseString(tuple_, parser_.lastLine_, parser_.settings_.delimCells_);
+    tuple_ = ParseString(tuple_, parser_.lastLine_, parser_.settings_.delimCells_, parser_.settings_.escapeSymbol_);
     return tuple_;
 }
 
