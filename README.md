@@ -1,2 +1,2 @@
-# 23210-Styvrin
-lab_oop_nsu
+# CPP-projects
+Учебные задачи, написанные на языке `C++`
