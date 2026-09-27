@@ -1,9 +1,9 @@
-[submodule "lab1a/lib/googletest"]
-	path = lab1a/lib/googletest
+[submodule "BitArray/lib/googletest"]
+	path = BitArray/lib/googletest
 	url = https://github.com/google/googletest.git
-[submodule "lab2a/lib/googletest"]
-	path = lab2a/lib/googletest
+[submodule "Game_Live/lib/googletest"]
+	path = Game_Live/lib/googletest
 	url = https://github.com/google/googletest.git
-[submodule "lab2b/lib/SDL"]
-	path = lab2b/lib/SDL
+[submodule "Game_Live/lib/SDL"]
+	path = Game_Live/lib/SDL
 	url = https://github.com/libsdl-org/SDL.git
